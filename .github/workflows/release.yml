@@ -1,0 +1,212 @@
+name: Release Desktop Packages
+
+# 三平台原生安裝包 + 免安裝壓縮檔，上傳到 GitHub Release。
+#
+# jpackage 無法交叉編譯，所以每種格式只能在對應的 OS runner 上產生：
+#   ubuntu  -> .deb / .rpm
+#   windows -> .msi
+#   macos   -> .dmg（arm64 與 x64 各打一份）
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '版本號 x.y.z（例如 1.0.0，不要加 v）'
+        required: true
+        type: string
+      draft:
+        description: '建立為草稿 Release'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  resolve-version:
+    name: 解析版本號
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.resolve.outputs.version }}
+      tag: ${{ steps.resolve.outputs.tag }}
+    steps:
+      - id: resolve
+        shell: bash
+        env:
+          # 走 env 而不是直接內插，避免 workflow_dispatch 的輸入被當成 shell 指令執行
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            VERSION="$INPUT_VERSION"
+          else
+            VERSION="$REF_NAME"
+          fi
+          VERSION="${VERSION#v}"
+          if ! printf '%s' "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::版本號必須是 x.y.z（jpackage 對 .msi / .dmg 的硬性限制），實際收到 '$VERSION'"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "### 準備發佈 \`v$VERSION\`" >> "$GITHUB_STEP_SUMMARY"
+
+  package:
+    name: 打包 ${{ matrix.name }}
+    needs: resolve-version
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: linux-x64
+            tasks: ':desktopApp:packageDeb :desktopApp:packageRpm :desktopApp:createDistributable'
+          - os: windows-latest
+            name: windows-x64
+            tasks: ':desktopApp:packageMsi :desktopApp:createDistributable'
+          - os: macos-latest
+            name: macos-arm64
+            tasks: ':desktopApp:packageDmg :desktopApp:createDistributable'
+          - os: macos-13
+            name: macos-x64
+            tasks: ':desktopApp:packageDmg :desktopApp:createDistributable'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 安裝 JDK 21 (Zulu)
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: '21'
+
+      - name: 設定 Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: 安裝 Linux 打包工具
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          # fakeroot + dpkg 供 .deb，rpm 提供 rpmbuild 供 .rpm，binutils 供 jpackage 的 objcopy
+          sudo apt-get install -y --no-install-recommends fakeroot rpm binutils
+
+      - name: 確認 WiX Toolset v3（jpackage 產生 .msi 需要）
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $candle = Get-ChildItem 'C:\Program Files (x86)\WiX Toolset v3*\bin\candle.exe' -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $candle) {
+            choco install wixtoolset -y --no-progress
+            $candle = Get-ChildItem 'C:\Program Files (x86)\WiX Toolset v3*\bin\candle.exe' -ErrorAction SilentlyContinue | Select-Object -First 1
+          }
+          if (-not $candle) { throw 'WiX Toolset v3 not found; jpackage 無法產生 .msi' }
+          Add-Content -Path $env:GITHUB_PATH -Value $candle.Directory.FullName
+
+      - name: 打包
+        shell: bash
+        run: ./gradlew ${{ matrix.tasks }} -PappVersion=${{ needs.resolve-version.outputs.version }} --stacktrace
+
+      - name: 收集產物
+        shell: bash
+        env:
+          VERSION: ${{ needs.resolve-version.outputs.version }}
+          TARGET: ${{ matrix.name }}
+        run: |
+          set -euo pipefail
+          BIN=desktopApp/build/compose/binaries/main
+          OUT=artifacts
+          mkdir -p "$OUT"
+
+          # 安裝包：deb/rpm/msi/dmg 各自落在 $BIN/<format>/ 底下。
+          # 重新命名帶上平台，避免 macos-arm64 與 macos-x64 的 .dmg 在 Release 撞名。
+          while IFS= read -r f; do
+            ext="${f##*.}"
+            cp "$f" "$OUT/ConsoleApp-${VERSION}-${TARGET}.${ext}"
+          done < <(find "$BIN" -mindepth 2 -maxdepth 2 -type f \
+                     \( -name '*.deb' -o -name '*.rpm' -o -name '*.msi' -o -name '*.dmg' \))
+
+          # 免安裝版：createDistributable 產生自帶精簡 JRE 的目錄，解壓即可執行。
+          # 從 app/ 內部打包，壓縮檔裡才不會帶上 desktopApp/build/... 這串路徑。
+          APP_DIR="$BIN/app"
+          if [ -d "$APP_DIR" ]; then
+            ABS_OUT="$(cd "$OUT" && pwd)"
+            if [ "$RUNNER_OS" = "Windows" ]; then
+              (cd "$APP_DIR" && 7z a -tzip "$ABS_OUT/ConsoleApp-${VERSION}-${TARGET}-portable.zip" ./* > /dev/null)
+            else
+              tar -czf "$ABS_OUT/ConsoleApp-${VERSION}-${TARGET}-portable.tar.gz" -C "$APP_DIR" .
+            fi
+          fi
+
+          ls -lh "$OUT"
+          if [ -z "$(ls -A "$OUT")" ]; then
+            echo "::error::$TARGET 沒有產生任何檔案"
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: artifacts/*
+          if-no-files-found: error
+          retention-days: 7
+
+  release:
+    name: 建立 Release
+    needs: [resolve-version, package]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github
+          sparse-checkout-cone-mode: false
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: 產生 Release 說明
+        shell: bash
+        env:
+          VERSION: ${{ needs.resolve-version.outputs.version }}
+        run: |
+          set -euo pipefail
+          ls -lh dist
+          sed "s/{{VERSION}}/$VERSION/g" .github/release-notes-template.md > notes.md
+          cat notes.md
+
+      - name: 上傳到 GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.resolve-version.outputs.tag }}
+          VERSION: ${{ needs.resolve-version.outputs.version }}
+          REPO: ${{ github.repository }}
+          DRAFT: ${{ inputs.draft }}
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" -R "$REPO" >/dev/null 2>&1; then
+            echo "Release $TAG 已存在，直接覆蓋產物"
+            gh release upload "$TAG" dist/* --clobber -R "$REPO"
+          else
+            EXTRA=()
+            # workflow_dispatch 預設開草稿，讓人先檢查過再公開；tag push 則直接發佈
+            if [ "${DRAFT:-false}" = "true" ]; then EXTRA+=(--draft); fi
+            gh release create "$TAG" dist/* \
+              -R "$REPO" \
+              --title "ConsoleApp $VERSION" \
+              --notes-file notes.md \
+              "${EXTRA[@]}"
+          fi
+          echo "### Release $TAG 已就緒" >> "$GITHUB_STEP_SUMMARY"

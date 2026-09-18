@@ -21,6 +21,36 @@ options:
     - Wasm target (faster, modern browsers): `./gradlew :webApp:wasmJsBrowserDevelopmentRun`
     - JS target (slower, supports older browsers): `./gradlew :webApp:jsBrowserDevelopmentRun`
 
+### Packaging the desktop app
+
+`jpackage` (which Compose Desktop drives under the hood) cannot cross-compile: each installer
+format can only be produced on its own OS. Building on Linux gives you `.deb` / `.rpm`, building
+on Windows gives you `.msi`, building on macOS gives you `.dmg`. Incompatible formats are skipped
+automatically on the current platform.
+
+- Native installer for the current OS: `./gradlew :desktopApp:packageDistributionForCurrentOS`
+- Linux specifically: `./gradlew :desktopApp:packageDeb` / `./gradlew :desktopApp:packageRpm`
+  (needs `fakeroot` + `dpkg` for `.deb`, and `rpmbuild` for `.rpm`)
+- Portable build with a bundled JRE — no installer, no Java required on the target machine:
+  `./gradlew :desktopApp:createDistributable`, then run
+  `desktopApp/build/compose/binaries/main/app/cg.creamgod.consoleapp/bin/cg.creamgod.consoleapp`
+- Try the packaged build without installing it: `./gradlew :desktopApp:runDistributable`
+
+Override the version with `-PappVersion=1.2.3`; it must be `x.y.z`, since `jpackage` rejects
+anything else for `.msi` and `.dmg`.
+
+### Releasing
+
+`.github/workflows/release.yml` builds all three platforms in parallel (Linux x64, Windows x64,
+macOS arm64 and x64) and uploads the installers plus portable archives to a GitHub Release.
+
+- Push a tag: `git tag v1.0.0 && git push origin v1.0.0` — publishes the Release directly.
+- Or run the **Release Desktop Packages** workflow manually from the Actions tab and type the
+  version; it creates a draft Release by default so you can check the artifacts first.
+
+Release notes come from `.github/release-notes-template.md` (`{{VERSION}}` is substituted).
+The artifacts are unsigned, so Windows SmartScreen and macOS Gatekeeper will warn about them.
+
 ### Running tests
 
 Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
