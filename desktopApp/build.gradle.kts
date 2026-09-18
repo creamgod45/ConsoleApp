@@ -42,8 +42,8 @@ compose.desktop {
                 shortcut = true
                 menuGroup = "ConsoleApp"
                 appCategory = "Utility"
-                // TODO: 換成實際的維護者信箱，jpackage 會寫進 .deb 的 control 檔
-                debMaintainer = "creamgod45@users.noreply.github.com"
+                // jpackage 會把這個寫進 .deb 的 control 檔
+                debMaintainer = "fuyin1054@gmail.com"
                 // repo 目前沒有 LICENSE 檔，先留 Unknown；加上授權後改成對應的 SPDX 代碼
                 rpmLicenseType = "Unknown"
             }
