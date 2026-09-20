@@ -439,12 +439,10 @@ fun App() {
                         )
                     })
                 }
-
                 Greeting -> {
                     welcomePage(
                     )
                 }
-
                 Setting -> {
                     settingPage(
                     )
@@ -465,7 +463,6 @@ fun App() {
                 Compose -> {
                     Text(text = "Welcome To Compose Page")
                 }
-
                 Kotlin_introduction -> {
                     KotlinIntroductionScreen(
                         onPageSelected = { page ->
@@ -521,7 +518,7 @@ fun KotlinIntroductionScreen(
         drawer(
             onPageSelected,
             content = {
-                Text(text = "Welcome To Kotlin 介紹 Page")
+                Text(text = "Kotlin － 介紹")
             }
         )
     })

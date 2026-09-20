@@ -1,5 +1,15 @@
 This is a Kotlin Multiplatform project targeting Web, Desktop (JVM).
 
+### Component library
+
+- [Component guide](./docs/component-guide.md) — design philosophy, quick start,
+  examples, API index, accessibility, and extension rules.
+- [Guided article authoring](./docs/article-guide.md) — article types and writing guide.
+- [Component library reference](./docs/component-library.md) — architecture and
+  Bootstrap coverage.
+- In-app guide: `ComponentGuide()` from
+  `cg.creamgod.consoleapp.designsystem.catalog`.
+
 * [/shared](./shared/src) is for code that will be shared across your Compose Multiplatform applications. It contains
   several subfolders:
     - [commonMain](./shared/src/commonMain/kotlin) is for code that’s common for all targets.
