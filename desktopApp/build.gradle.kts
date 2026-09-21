@@ -43,7 +43,7 @@ compose.desktop {
                 menuGroup = "ConsoleApp"
                 appCategory = "Utility"
                 // jpackage 會把這個寫進 .deb 的 control 檔
-                debMaintainer = "fuyin1054@gmail.com"
+                debMaintainer = "ConsoleAppMaintance@icloud.com"
                 // repo 目前沒有 LICENSE 檔，先留 Unknown；加上授權後改成對應的 SPDX 代碼
                 rpmLicenseType = "Unknown"
             }
