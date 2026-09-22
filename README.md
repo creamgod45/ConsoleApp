@@ -1,35 +1,45 @@
-This is a Kotlin Multiplatform project targeting Web, Desktop (JVM).
+# ConsoleApp Design System
 
-### Component library
+以 Kotlin Multiplatform 與 Compose Multiplatform 建立的跨平台設計系統，同一套
+`commonMain` 元件可用於 Desktop JVM、JavaScript 與 Wasm。
 
-- [Component guide](./docs/component-guide.md) — design philosophy, quick start,
-  examples, API index, accessibility, and extension rules.
-- [Guided article authoring](./docs/article-guide.md) — article types and writing guide.
-- [Component library reference](./docs/component-library.md) — architecture and
-  Bootstrap coverage.
-- In-app guide: `ComponentGuide()` from
-  `cg.creamgod.consoleapp.designsystem.catalog`.
+底層採用 Material 3 的 theme、互動與無障礙能力，公開 API 則保留接近
+Bootstrap／HTML framework 的短名稱與語意，讓畫面能快速組裝：
 
-* [/shared](./shared/src) is for code that will be shared across your Compose Multiplatform applications. It contains
-  several subfolders:
-    - [commonMain](./shared/src/commonMain/kotlin) is for code that’s common for all targets.
-    - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name. For
-      example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-      the [iosMain](./shared/src/iosMain/kotlin) folder would be the right place for such calls. Similarly, if you want
-      to edit the Desktop (JVM) specific part, the [jvmMain](./shared/src/jvmMain/kotlin)
-      folder is the appropriate location.
+```kotlin
+var profileSaved by remember { mutableStateOf(false) }
 
-### Running the apps
+Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    H1("Account settings")
+    Lead("Manage profile, security, and notification preferences.")
+    if (profileSaved) {
+        Alert(
+            message = "設定已更新",
+            tone = Tone.Success,
+            dismissible = true,
+            onDismiss = { profileSaved = false },
+        )
+    }
 
-Use the run configurations provided by the run widget in your IDE's toolbar. You can also use these commands and
-options:
+    Card(title = "Profile", subtitle = "Public account information") {
+        Paragraph("Changes are shared across all signed-in devices.")
+    }
 
-- Desktop app:
-    - Hot reload: `./gradlew :desktopApp:hotRun --auto`
-    - Standard run: `./gradlew :desktopApp:run`
-- Web app:
-    - Wasm target (faster, modern browsers): `./gradlew :webApp:wasmJsBrowserDevelopmentRun`
-    - JS target (slower, supports older browsers): `./gradlew :webApp:jsBrowserDevelopmentRun`
+    Button("儲存", onClick = { profileSaved = true })
+}
+```
+
+## 功能特色
+
+- Compose-first：不是 HTML/CSS wrapper，Desktop 與 Web 使用相同 Composable。
+- Material 3：顏色、排版、shape、surface 與互動狀態跟隨 `MaterialTheme`。
+- Framework 式 API：`Button`、`Card`、`Navbar`、`Modal`、`H1`、`Paragraph` 等短名稱。
+- Controlled state：表單、導覽、Dialog 與 Overlay 狀態由 screen 或 ViewModel 管理。
+- 完整表單 helper：輸入、密碼、多行、選擇、switch、range、layout 與驗證。
+- 文件系統：強型別 Document DSL、Markdown parser、Material renderer 與 resource loader。
+- App 內元件目錄：`ComponentGuide()` 可即時預覽元件、文章與 Markdown。
+
+## 快速開始
 
 ### Packaging the desktop app
 
@@ -61,21 +71,147 @@ macOS arm64 and x64) and uploads the installers plus portable archives to a GitH
 Release notes come from `.github/release-notes-template.md` (`{{VERSION}}` is substituted).
 The artifacts are unsigned, so Windows SmartScreen and macOS Gatekeeper will warn about them.
 
-### Running tests
+```kotlin
+import cg.creamgod.consoleapp.designsystem.components.*
+import cg.creamgod.consoleapp.designsystem.components.form.*
+import cg.creamgod.consoleapp.designsystem.content.*
+import cg.creamgod.consoleapp.designsystem.patterns.article.*
+```
 
-Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
+如果也匯入 Material 3 的同名元件，請使用 alias：
 
-- Desktop tests: `./gradlew :shared:jvmTest`
-- Web tests:
-    - Wasm target: `./gradlew :shared:wasmJsTest`
-    - JS target: `./gradlew :shared:jsTest`
+```kotlin
+import cg.creamgod.consoleapp.designsystem.components.Button as AppButton
+import androidx.compose.material3.Button as MaterialButton
+```
 
----
+### 表單與驗證
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html),
-[Compose Multiplatform](https://kotlinlang.org/compose-multiplatform/),
-[Kotlin/Wasm](https://kotl.in/wasm/)…
+```kotlin
+var email by remember { mutableStateOf("") }
+val validation = FormValidators.all(
+    FormValidators.required(),
+    FormValidators.email(),
+).validate(email)
 
-We would appreciate your feedback on Compose/Web and Kotlin/Wasm in the public Slack
-channel [#compose-web](https://slack-chats.kotlinlang.org/c/compose-web). If you face any issues, please report them
-on [YouTrack](https://youtrack.jetbrains.com/newIssue?project=CMP).
+FormTextInput(
+    value = email,
+    onValueChange = { email = it },
+    label = "Email",
+    type = FormInputType.Email,
+    required = true,
+    errorText = validation.message,
+    modifier = Modifier.fillMaxWidth(),
+)
+```
+
+### 受控確認視窗
+
+```kotlin
+var showDelete by remember { mutableStateOf(false) }
+
+Confirm(
+    visible = showDelete,
+    title = "刪除資料？",
+    message = "這個動作無法復原。",
+    destructive = true,
+    onConfirm = {
+        delete()
+        showDelete = false
+    },
+    onDismiss = { showDelete = false },
+)
+```
+
+### Markdown resource
+
+把文件放在 `shared/src/commonMain/composeResources/files/docs`，然後直接渲染：
+
+```kotlin
+MarkdownResource("docs/getting-started.md")
+```
+
+或使用強型別 DSL：
+
+```kotlin
+val quickStart = document {
+    h1("Quick start")
+    paragraph(text("Use "), strong("semantic"), text(" content."))
+    orderedList("Install", "Run", "Verify")
+    code(
+        "Button(text = \"Save\", onClick = { profileSaved = true })",
+        language = "kotlin",
+    )
+}
+
+DocumentRenderer(quickStart)
+```
+
+## 元件一覽
+
+| 分類 | 公開 API |
+| --- | --- |
+| Semantic content | `H1`–`H6`, `Paragraph`, `Lead`, `Caption`, `SmallText` |
+| Documents | `DocumentRenderer`, `MarkdownDocument`, `MarkdownResource`, `document` |
+| Actions | `Button`, `ButtonGroup`, `CloseButton`, `Dropdown` |
+| Feedback | `Alert`, `Callout`, `Badge`, `Progress`, `Spinner`, `Placeholder`, `Toast`, `ToastHost` |
+| Disclosure | `Collapse`, `Accordion` |
+| Surfaces | `Card`, `ListGroup`, `Carousel` |
+| Navigation | `Breadcrumb`, `Navbar`, `Tabs`, `Nav`, `Pagination`, `ScrollSpy` |
+| Forms | `FormTextInput`, `FormPasswordInput`, `FormTextArea`, `FormSelect`, `FormMultiSelect`, `FormCheckbox`, `FormRadioGroup`, `FormSwitch`, `FormRange`, `FormSection`, `FormInputGroup`, `FormFilePicker`, `FormActions` |
+| Overlay | `Popup`, `Modal`, `Confirm`, `Ask`, `Choice`, `Offcanvas`, `Popover`, `Tooltip` |
+| Articles | `GuideArticle`, `ArticleStep`, `ArticleCallout`, `CodeBlock` |
+| Catalog | `ComponentGuide`, `bootstrapComponentCatalog` |
+
+## 文件
+
+- [完整元件使用手冊](./docs/components.md) — 所有公開元件、state model 與範例。
+- [元件 API 與參數參考](./docs/component-reference.md) — 每個參數、預設值、狀態責任與適用情境。
+- [業務情境實作](./docs/business-recipes.md) — 表單、刪除、搜尋分頁、附件、部署與說明中心。
+- [帳號設定完整教學](./docs/tutorial-account-settings.md) — 從資料模型、驗證、helper 到 repository 與測試。
+- [Component guide](./docs/component-guide.md) — 設計哲學、規範與索引。
+- [Semantic content and Markdown](./docs/content-guide.md) — HTML-like 排版與資源載入。
+- [Guided article authoring](./docs/article-guide.md) — 教學文章類型與結構。
+- [Component library reference](./docs/component-library.md) — 架構與 rollout。
+- [GitHub Wiki 首頁原稿](./wiki/Home.md) — 可同步到獨立 Wiki repository。
+- App 內預覽：`cg.creamgod.consoleapp.designsystem.catalog.ComponentGuide()`。
+
+## 執行專案
+
+```shell
+# Desktop hot reload / standard run
+./gradlew :desktopApp:hotRun --auto
+./gradlew :desktopApp:run
+
+# Web
+./gradlew :webApp:wasmJsBrowserDevelopmentRun
+./gradlew :webApp:jsBrowserDevelopmentRun
+```
+
+Windows PowerShell 使用 `./gradlew.bat`。
+
+## 測試
+
+```shell
+./gradlew :shared:jvmTest
+./gradlew :shared:jsTest
+./gradlew :shared:wasmJsTest
+```
+
+## 專案結構
+
+```text
+shared/src/commonMain/
+├── composeResources/                 # 共用字型、圖片與 Markdown
+└── kotlin/cg/creamgod/consoleapp/designsystem/
+    ├── catalog/                      # App 內元件目錄與 coverage
+    ├── components/                   # Actions、forms、feedback、navigation…
+    ├── content/                      # Typography、Document、Markdown
+    ├── foundation/                   # 共用語意與狀態 model
+    ├── patterns/article/             # Guide article pattern
+    └── tokens/                       # Spacing、radius、breakpoints
+```
+
+延伸閱讀：[Kotlin Multiplatform](https://kotlinlang.org/docs/multiplatform.html)、
+[Compose Multiplatform](https://www.jetbrains.com/compose-multiplatform/) 與
+[Kotlin/Wasm](https://kotl.in/wasm)。

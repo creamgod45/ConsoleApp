@@ -12,6 +12,7 @@ data class BootstrapComponentSpec(
 /** Bootstrap 5.3 surface mapped to the planned Compose Multiplatform library. */
 val bootstrapComponentCatalog = listOf(
     BootstrapComponentSpec("Layout", "Container / Grid / Columns / Gutters", "ResponsiveContainer, GridRow, GridColumn", ComponentStatus.Planned),
+    BootstrapComponentSpec("Content", "Semantic typography / Documents / Markdown", "H1-H6, Paragraph, DocumentRenderer, MarkdownDocument, MarkdownResource", ComponentStatus.Ready),
     BootstrapComponentSpec("Content", "Typography / Images / Tables / Figures", "Typography, ResponsiveImage, DataTable, Figure", ComponentStatus.Planned),
     BootstrapComponentSpec("Forms", "Controls / Select / Checks / Radios / Range", "FormTextInput, FormSelect, FormCheckbox, FormRadioGroup, FormRange", ComponentStatus.Ready),
     BootstrapComponentSpec("Forms", "Input group / Layout / Validation", "FormInputGroup, FormSection, FormValidators", ComponentStatus.Ready),

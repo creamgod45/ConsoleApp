@@ -18,6 +18,9 @@ dependencies {
 
     implementation("org.jetbrains.compose.material:material-icons-extended:1.7.3")
     implementation(libs.compose.uiToolingPreview)
+    implementation(libs.androidx.material3.desktop)
+    implementation(libs.okhttp)
+    testImplementation(libs.kotlin.testJunit)
 }
 
 compose.desktop {

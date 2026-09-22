@@ -8,13 +8,25 @@ plugins {
 
 kotlin {
     js {
-        browser()
+        browser {
+            testTask {
+                useKarma {
+                    useChromiumHeadless()
+                }
+            }
+        }
         binaries.executable()
     }
 
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
-        browser()
+        browser {
+            testTask {
+                useKarma {
+                    useChromiumHeadless()
+                }
+            }
+        }
         binaries.executable()
     }
 
@@ -26,6 +38,10 @@ kotlin {
             implementation(libs.compose.components.resources)
 
             implementation("org.jetbrains.compose.material:material-icons-extended:1.7.3")
+        }
+
+        webMain.dependencies {
+            implementation(libs.wrappers.browser)
         }
     }
 }

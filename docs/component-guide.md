@@ -20,10 +20,19 @@ import cg.creamgod.consoleapp.designsystem.components.form.*
 接著直接使用短名稱：
 
 ```kotlin
+var saved by remember { mutableStateOf(false) }
+
 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-    Alert("設定已更新", tone = Tone.Success)
+    if (saved) {
+        Alert(
+            message = "設定已更新",
+            tone = Tone.Success,
+            dismissible = true,
+            onDismiss = { saved = false },
+        )
+    }
     Badge("Beta", pill = true)
-    Button("儲存", onClick = ::save)
+    Button("儲存", onClick = { saved = true })
     Progress(0.75f)
 }
 ```
@@ -105,11 +114,28 @@ Composable 使用 Bootstrap 熟悉的名稱，例如 `Card()`、`Modal()`、`Tab
 | `Dropdown` | 按鈕觸發的選單 |
 
 ```kotlin
-Button(
-    text = "刪除",
-    onClick = ::requestDelete,
-    tone = Tone.Danger,
-    variant = Variant.Outline,
+var showDeleteConfirmation by remember { mutableStateOf(false) }
+var itemExists by remember { mutableStateOf(true) }
+
+if (itemExists) {
+    Button(
+        text = "刪除",
+        onClick = { showDeleteConfirmation = true },
+        tone = Tone.Danger,
+        variant = Variant.Outline,
+    )
+}
+
+Confirm(
+    visible = showDeleteConfirmation,
+    title = "刪除項目？",
+    message = "這個動作無法復原。",
+    destructive = true,
+    onConfirm = {
+        itemExists = false
+        showDeleteConfirmation = false
+    },
+    onDismiss = { showDeleteConfirmation = false },
 )
 ```
 
@@ -241,8 +267,13 @@ fun DesignSystemScreen() {
 
 - 理念：Compose-first、controlled state、語意色與平台 adapter。
 - 文章：`GuideArticle` 的 Getting Started 實際範例。
+- Markdown：直接讀取 `composeResources/files` 文件並以 Material 3 呈現。
 - 範例：Button、Alert、Form、Progress、Accordion、Confirm 的互動展示。
 - 索引：讀取 machine-readable catalog 顯示 Ready、Planned、Adapter 狀態。
+
+所有公開元件的程式範例請見[完整元件使用手冊](./components.md)，逐參數 contract 請見
+[元件 API 與參數參考](./component-reference.md)，ViewModel／repository／非同步流程請見
+[業務情境實作](./business-recipes.md)。
 
 需要撰寫教學內容時，請參考[引導文章作者指南](./article-guide.md)。文章元件支援
 Getting Started、Tutorial、How-to、Concept、Reference、Troubleshooting 與 Migration。

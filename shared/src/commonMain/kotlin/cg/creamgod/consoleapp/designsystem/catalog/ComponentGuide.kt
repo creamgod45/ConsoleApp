@@ -33,6 +33,7 @@ import cg.creamgod.consoleapp.designsystem.components.Variant
 import cg.creamgod.consoleapp.designsystem.components.form.FormInputType
 import cg.creamgod.consoleapp.designsystem.components.form.FormTextInput
 import cg.creamgod.consoleapp.designsystem.components.form.FormValidators
+import cg.creamgod.consoleapp.designsystem.content.MarkdownResource
 import cg.creamgod.consoleapp.designsystem.foundation.ComponentStatus
 import cg.creamgod.consoleapp.designsystem.patterns.article.ArticleCallout
 import cg.creamgod.consoleapp.designsystem.patterns.article.ArticleMeta
@@ -75,10 +76,16 @@ fun ComponentGuide(
         when (section) {
             GuideSection.Overview -> OverviewGuide()
             GuideSection.Article -> ArticleGuideDemo()
+            GuideSection.Markdown -> MarkdownGuideDemo()
             GuideSection.Playground -> ComponentPlayground()
             GuideSection.Catalog -> CatalogGuide()
         }
     }
+}
+
+@Composable
+private fun MarkdownGuideDemo() {
+    MarkdownResource("docs/content-example.md")
 }
 
 @Composable
@@ -244,6 +251,7 @@ private fun PrincipleCard(title: String, text: String) {
 private enum class GuideSection(val label: String) {
     Overview("理念"),
     Article("文章"),
+    Markdown("Markdown"),
     Playground("範例"),
     Catalog("索引"),
 }

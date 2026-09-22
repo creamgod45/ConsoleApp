@@ -89,8 +89,17 @@ Supporting models are deliberately short as well: `AccordionItem`, `BreadcrumbIt
 ```kotlin
 import cg.creamgod.consoleapp.designsystem.components.*
 
-Button("儲存", onClick = ::save)
-Alert("資料已更新", tone = Tone.Success)
+var saved by remember { mutableStateOf(false) }
+
+Button("儲存", onClick = { saved = true })
+if (saved) {
+    Alert(
+        message = "資料已更新",
+        tone = Tone.Success,
+        dismissible = true,
+        onDismiss = { saved = false },
+    )
+}
 Badge("New", pill = true)
 Progress(0.65f)
 
