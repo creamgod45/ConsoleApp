@@ -162,6 +162,10 @@ jobs:
     name: 打包 android
     needs: resolve-version
     runs-on: ubuntu-latest
+    env:
+      # secrets context 在 step 的 if: 不可用（只有 github/needs/strategy/matrix/job/
+      # runner/env/vars/steps/inputs），所以先在 job 層轉成 env 再判斷。
+      ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
     steps:
       - uses: actions/checkout@v4
 
@@ -176,10 +180,8 @@ jobs:
 
       - name: 還原簽章金鑰
         # 沒有設定 ANDROID_KEYSTORE_BASE64 secret 時就跳過，產物會是未簽署的 APK。
-        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        if: env.ANDROID_KEYSTORE_BASE64 != ''
         shell: bash
-        env:
-          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
           set -euo pipefail
           printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.keystore"
