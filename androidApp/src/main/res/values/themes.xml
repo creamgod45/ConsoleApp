@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Compose 自己畫全部的 UI，這裡只要一個沒有 ActionBar 的底色主題。
+         用平台內建主題，就不必額外相依 AppCompat / Material components。 -->
+    <style name="Theme.ConsoleApp" parent="android:Theme.Material.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowBackground">@color/ic_launcher_background</item>
+    </style>
+</resources>
