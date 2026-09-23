@@ -12,11 +12,21 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
+        val filePicker = AndroidFilePicker(this)
+        val questionApi = AndroidQuestionApi(
+            endpoint = "${BuildConfig.API_BASE_URL}/api/upload",
+            contentResolver = contentResolver,
+        )
+        val mailApi = AndroidMailApi(
+            endpoint = "${BuildConfig.API_BASE_URL}/api/faker/mail",
+        )
+
         setContent {
-            // 目前用 App() 的預設參數：Android 版還沒有自己的 filePicker / 上傳 / 郵件實作，
-            // 那幾個畫面會落到 shared 的預設行為。要接上時比照 desktopApp、webApp 的 main
-            // 建立實作後傳進來即可。
-            App()
+            App(
+                submitQuestion = questionApi::submit,
+                loadMails = mailApi::load,
+                filePicker = filePicker,
+            )
         }
     }
 }

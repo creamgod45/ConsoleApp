@@ -19,8 +19,14 @@ val appVersionCode: Int = providers.gradleProperty("appVersionCode")
     .map(String::toInt)
     .getOrElse(versionCodeOf(appVersion))
 
+// Emulator 可透過 10.0.2.2 連到開發電腦；實機可用 -PapiBaseUrl=http://<電腦區網 IP>:8000 覆寫。
+val apiBaseUrl = providers.gradleProperty("apiBaseUrl").getOrElse("http://192.168.10.244:8000")
+val escapedApiBaseUrl = apiBaseUrl.replace("\\", "\\\\").replace("\"", "\\\"")
+
 // 簽章資料從 gradle property 或環境變數來，兩者都沒有時 release 會產出未簽署的 APK
 // （檔名會是 *-unsigned.apk，無法直接安裝）。不要把 keystore 或密碼提交進 repo。
+
+
 val keystorePath = providers.gradleProperty("androidKeystorePath")
     .orElse(providers.environmentVariable("ANDROID_KEYSTORE_PATH"))
 val keystorePassword = providers.gradleProperty("androidKeystorePassword")
@@ -32,7 +38,7 @@ val keystoreKeyPassword = providers.gradleProperty("androidKeyPassword")
 
 android {
     namespace = "cg.creamgod.consoleapp"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "cg.creamgod.consoleapp"
@@ -40,6 +46,11 @@ android {
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = appVersionCode
         versionName = appVersion
+        buildConfigField("String", "API_BASE_URL", "\"$escapedApiBaseUrl\"")
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     signingConfigs {
@@ -84,6 +95,7 @@ dependencies {
     implementation(libs.compose.ui)
     implementation(libs.compose.uiToolingPreview)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.okhttp)
 
     debugImplementation(compose.uiTooling)
 }

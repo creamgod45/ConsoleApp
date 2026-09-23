@@ -1224,8 +1224,12 @@ private fun SwipeMailItem(
                         overflow = TextOverflow.Ellipsis,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.padding(4.dp)) {
-
+                    Row(
+                        modifier = Modifier
+                            .padding(4.dp)
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
                         if (mail.attachments.isNotEmpty()) {
                             mail.attachments.forEach { attachment ->
                                 AssistChip(
