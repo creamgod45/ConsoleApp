@@ -16,8 +16,16 @@ fun Dashboard(onContinue: () -> Unit) {
 ## 從這裡開始
 
 - [Getting Started](Getting-Started) — import、第一個元件、執行與測試。
+- [Learning Roadmap](Learning-Roadmap) — 從 Kotlin、Compose、shared 到完整作品的分階段學習路徑。
+- [How to Plan Chapters](Planning-a-Guide-Book) — 如何規劃教學書、範例、拆解與驗收標準。
+- [Compose Concepts](Compose-Concepts) — 宣告式 UI、重新組合、state hoisting、effect 與 Modifier。
+- [Kotlin Shared / commonMain](Kotlin-Shared) — 共用程式碼邊界、contract、測試與平台注入。
+- [WebMain Guide](WebMain-Guide) — ComposeViewport、瀏覽器 adapter、JS/Wasm 執行與除錯。
+- [DesktopApp Guide](DesktopApp-Guide) — Window、JVM adapter、原生檔案對話框與封裝。
 - [Components](Components) — 所有公開元件的分類、state model 與基本用法。
+- [Component Learning Pages](Component-Learning-Pages) — 每個元件獨立頁面的閱讀方式與完整案例索引。
 - [Business Recipes](Business-Recipes) — ViewModel、驗證、非同步結果與復原流程。
+- [Business Case Study](Business-Case-Study) — 從需求拆解到 repository、UI state、測試的帳號設定案例。
 - [Account Settings Tutorial](Tutorial-Account-Settings) — 可編譯的完整 helper、repository 與測試。
 - [Content and Markdown](Content-and-Markdown) — H1–H6、Document DSL、parser 與 resource。
 - [Architecture](Architecture) — 模組邊界、controlled state、平台 adapter 與擴充原則。

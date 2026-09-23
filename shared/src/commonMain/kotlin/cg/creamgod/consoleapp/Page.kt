@@ -4,6 +4,7 @@ enum class Page {
     Home,
     Greeting,
     Setting,
+    GuideBook,
 
     Kotlin,
     Kotlin_introduction,

@@ -33,6 +33,7 @@ compose.desktop {
             targetFormats(
                 TargetFormat.Deb,  // Linux: Debian / Ubuntu
                 TargetFormat.Rpm,  // Linux: Fedora / RHEL / openSUSE
+                TargetFormat.Exe,  // Windows 安裝程式
                 TargetFormat.Msi,  // Windows
                 TargetFormat.Dmg,  // macOS
             )

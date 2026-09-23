@@ -14,8 +14,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import cg.creamgod.consoleapp.designsystem.components.Badge
@@ -177,6 +183,9 @@ fun CodeBlock(
     modifier: Modifier = Modifier,
     language: String? = null,
 ) {
+    val clipboard = LocalClipboardManager.current
+    var copied by remember(code) { mutableStateOf(false) }
+
     Surface(
         modifier = modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.inverseSurface,
@@ -184,11 +193,24 @@ fun CodeBlock(
         shape = MaterialTheme.shapes.medium,
     ) {
         Column(modifier = Modifier.padding(BootstrapTokens.Spacing.three)) {
-            language?.let {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Text(
-                    text = it,
+                    text = language ?: "Code",
                     color = MaterialTheme.colorScheme.inversePrimary,
                     style = MaterialTheme.typography.labelSmall,
+                )
+                Button(
+                    text = if (copied) "已複製" else "複製",
+                    onClick = {
+                        clipboard.setText(AnnotatedString(code))
+                        copied = true
+                    },
+                    tone = Tone.Light,
+                    variant = Variant.Text,
                 )
             }
             SelectionContainer {
