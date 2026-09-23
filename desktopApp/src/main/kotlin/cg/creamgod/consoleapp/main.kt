@@ -10,6 +10,7 @@ import androidx.compose.ui.window.rememberWindowState
 fun main() = application {
     val filePicker = remember { DesktopFilePicker() }
     val questionApi = remember { DesktopQuestionApi("http://localhost:8000/api/upload") }
+    val mailApi = remember { DesktopMailApi("http://localhost:8000/api/faker/mail") }
 
     Window(
         onCloseRequest = ::exitApplication,
@@ -18,6 +19,7 @@ fun main() = application {
     ) {
         App(
             submitQuestion = questionApi::submit,
+            loadMails = mailApi::load,
             filePicker = filePicker,
             dialogHost = { filePicker.Host() },
         )

@@ -11,11 +11,13 @@ fun main() {
         "http://localhost:8000/api/upload",
         filePicker = filePicker
     )
+    val mailApi = WebMailApi("http://localhost:8000/api/faker/mail")
 
     ComposeViewport {
         WithFontResourcesLoaded {
             App(
                 submitQuestion = questionApi::submit,
+                loadMails = mailApi::load,
                 filePicker = filePicker
             )
         }

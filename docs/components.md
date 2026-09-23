@@ -424,7 +424,11 @@ FormTextArea(
 ```
 
 `FormInputType` 支援 `Text`、`Email`、`Password`、`Number`、`Decimal`、`Phone`、`Url`、
-`Search`、`Date`、`Time`。Date/Time 的原生 picker 仍由平台 adapter 負責。
+`Search`、`Date`、`Time`。需要視覺化選擇時使用跨平台 `DatePicker`、`DateRangePicker`、
+`TimePicker`；若產品明確要求作業系統原生 picker，再由平台 adapter 實作。
+
+新一批 Material 3 actions、navigation、sheets、chips、search、Snackbar 與 picker 的完整實務
+範例集中在 [Material 3 元件與實務範例](./material3-components.md)。
 
 ### FormSelect、FormMultiSelect
 

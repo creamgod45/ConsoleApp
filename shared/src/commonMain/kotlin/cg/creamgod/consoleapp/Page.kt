@@ -9,7 +9,11 @@ enum class Page {
     Kotlin,
     Kotlin_introduction,
     Kotlin_variable,
+    Markdown_Example,
     Multiplatform,
     Java,
     Compose,
+    ComponentGuide,
+    Mailer,
+
 }

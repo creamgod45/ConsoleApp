@@ -153,19 +153,21 @@ DocumentRenderer(quickStart)
 | --- | --- |
 | Semantic content | `H1`–`H6`, `Paragraph`, `Lead`, `Caption`, `SmallText` |
 | Documents | `DocumentRenderer`, `MarkdownDocument`, `MarkdownResource`, `document` |
-| Actions | `Button`, `ButtonGroup`, `CloseButton`, `Dropdown` |
-| Feedback | `Alert`, `Callout`, `Badge`, `Progress`, `Spinner`, `Placeholder`, `Toast`, `ToastHost` |
+| Actions | `Button`, `ButtonGroup`, `IconButton`, `FloatingActionButton`, `ExtendedFloatingActionButton`, `FabMenu`, `SegmentedButtons`, `SplitButton`, `Dropdown` |
+| Feedback | `Alert`, `Callout`, `Badge`, `Progress`, `Spinner`, `LoadingIndicator`, `Snackbar`, `SnackbarHost`, `Placeholder`, `Toast`, `ToastHost` |
 | Disclosure | `Collapse`, `Accordion` |
 | Surfaces | `Card`, `ListGroup`, `Carousel` |
-| Navigation | `Breadcrumb`, `Navbar`, `Tabs`, `Nav`, `Pagination`, `ScrollSpy` |
-| Forms | `FormTextInput`, `FormPasswordInput`, `FormTextArea`, `FormSelect`, `FormMultiSelect`, `FormCheckbox`, `FormRadioGroup`, `FormSwitch`, `FormRange`, `FormSection`, `FormInputGroup`, `FormFilePicker`, `FormActions` |
-| Overlay | `Popup`, `Modal`, `Confirm`, `Ask`, `Choice`, `Offcanvas`, `Popover`, `Tooltip` |
+| Navigation | `NavigationBar`, `NavigationRail`, `NavigationDrawer`, `TopAppBar`, `BottomAppBar`, `Toolbar`, `Breadcrumb`, `Navbar`, `Tabs`, `Nav`, `Pagination`, `ScrollSpy` |
+| Forms | `DatePicker`, `DateRangePicker`, `TimePicker`, `Search`, `AssistChip`, `FilterChip`, `InputChip`, `SuggestionChip`, `FormTextInput`, `FormPasswordInput`, `FormTextArea`, `FormSelect`, `FormMultiSelect`, `FormCheckbox`, `FormRadioGroup`, `FormSwitch`, `FormRange`, `FormSection`, `FormInputGroup`, `FormFilePicker`, `FormActions` |
+| Overlay | `BottomSheet`, `SideSheet`, `Popup`, `Modal`, `Confirm`, `Ask`, `Choice`, `Offcanvas`, `Popover`, `Tooltip` |
+| Structure | `HorizontalDivider`, `VerticalDivider` |
 | Articles | `GuideArticle`, `ArticleStep`, `ArticleCallout`, `CodeBlock` |
 | Catalog | `ComponentGuide`, `bootstrapComponentCatalog` |
 
 ## 文件
 
 - [完整元件使用手冊](./docs/components.md) — 所有公開元件、state model 與範例。
+- [Material 3 元件與實務範例](./docs/material3-components.md) — 新增元件的參數、狀態與完整業務接法。
 - [元件 API 與參數參考](./docs/component-reference.md) — 每個參數、預設值、狀態責任與適用情境。
 - [業務情境實作](./docs/business-recipes.md) — 表單、刪除、搜尋分頁、附件、部署與說明中心。
 - [帳號設定完整教學](./docs/tutorial-account-settings.md) — 從資料模型、驗證、helper 到 repository 與測試。

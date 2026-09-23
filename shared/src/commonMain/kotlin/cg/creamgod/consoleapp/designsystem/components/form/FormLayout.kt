@@ -2,21 +2,33 @@ package cg.creamgod.consoleapp.designsystem.components.form
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import cg.creamgod.consoleapp.designsystem.components.AssistChip
 import cg.creamgod.consoleapp.designsystem.tokens.BootstrapTokens
 
 @Composable
@@ -125,5 +137,58 @@ private fun InputAddon(text: String) {
         color = MaterialTheme.colorScheme.surfaceVariant,
     ) {
         Text(text, modifier = Modifier.padding(horizontal = 12.dp, vertical = 16.dp))
+    }
+}
+
+
+@Composable
+fun <T> DropdownChip(
+    value: T?,
+    options: List<FormOption<T>>,
+    onValueChange: (T) -> Unit,
+    label: (T) -> String,
+    modifier: Modifier = Modifier,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    placeholder: String = "請選擇",
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box(modifier = modifier.padding(horizontal = 4.dp)) {
+        AssistChip(
+            label = value?.let(label) ?: placeholder,
+            onClick = { expanded = true },
+            leadingIcon = leadingIcon ?: {
+                Icon(
+                    Icons.Default.ArrowDropDown,
+                    contentDescription = null,
+                )
+            },
+        )
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option.label) },
+                    enabled = option.enabled,
+                    leadingIcon = if (option.value == value) {
+                        {
+                            Icon(
+                                Icons.Default.Check,
+                                contentDescription = null,
+                            )
+                        }
+                    } else {
+                        null
+                    },
+                    onClick = {
+                        onValueChange(option.value)
+                        expanded = false
+                    },
+                )
+            }
+        }
     }
 }

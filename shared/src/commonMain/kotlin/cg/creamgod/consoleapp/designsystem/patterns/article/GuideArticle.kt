@@ -17,11 +17,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import cg.creamgod.consoleapp.designsystem.components.Badge
@@ -31,6 +31,7 @@ import cg.creamgod.consoleapp.designsystem.components.Card
 import cg.creamgod.consoleapp.designsystem.components.Tone
 import cg.creamgod.consoleapp.designsystem.components.Variant
 import cg.creamgod.consoleapp.designsystem.tokens.BootstrapTokens
+import kotlinx.coroutines.launch
 
 enum class ArticleType(
     val label: String,
@@ -183,7 +184,8 @@ fun CodeBlock(
     modifier: Modifier = Modifier,
     language: String? = null,
 ) {
-    val clipboard = LocalClipboardManager.current
+    val clipboard = LocalClipboard.current
+    val coroutineScope = rememberCoroutineScope()
     var copied by remember(code) { mutableStateOf(false) }
 
     Surface(
@@ -206,8 +208,10 @@ fun CodeBlock(
                 Button(
                     text = if (copied) "已複製" else "複製",
                     onClick = {
-                        clipboard.setText(AnnotatedString(code))
-                        copied = true
+                        coroutineScope.launch {
+                            clipboard.setClipEntry(createPlainTextClipEntry(code))
+                            copied = true
+                        }
                     },
                     tone = Tone.Light,
                     variant = Variant.Text,

@@ -6,6 +6,8 @@
   and copy-ready example.
 - [Component API reference](./component-reference.md) — parameters, defaults, ownership,
   and appropriate use cases.
+- [Material 3 components](./material3-components.md) — complete coverage table and
+  copy-ready state, navigation, picker, search, sheet, and Snackbar examples.
 - [Business recipes](./business-recipes.md) — end-to-end state, validation, repository,
   async result, and recovery flows.
 - [Account settings tutorial](./tutorial-account-settings.md) — a complete reusable helper,

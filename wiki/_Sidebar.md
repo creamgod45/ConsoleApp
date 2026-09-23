@@ -9,6 +9,7 @@
 - [WebMain Guide](WebMain-Guide)
 - [DesktopApp Guide](DesktopApp-Guide)
 - [Components](Components)
+- [Material 3 Components](Material-3-Components)
 - [Component Learning Pages](Component-Learning-Pages)
 - [Business Recipes](Business-Recipes)
 - [Business Case Study](Business-Case-Study)

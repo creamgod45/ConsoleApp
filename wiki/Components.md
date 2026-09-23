@@ -6,6 +6,11 @@
 | --- | --- |
 | `Button` | Filled、Outline、Text action |
 | `ButtonGroup` | 單選 action group；使用 `ButtonItem` |
+| `SegmentedButtons` | Material 3 互斥分段選擇 |
+| `SplitButton` | 預設動作加替代動作 menu |
+| `IconButton` | 必填無障礙說明的圖示按鈕 |
+| `FloatingActionButton` / `ExtendedFloatingActionButton` | 畫面主要動作 |
+| `FabMenu` | 多個相關主要動作 |
 | `CloseButton` | 有 content description 的關閉 action |
 | `Dropdown` | 使用 `DropdownItem` 的 button menu |
 
@@ -42,6 +47,8 @@ fun ReportActions(
 | `Badge` | 狀態或數量標籤 |
 | `Progress` | `0f..1f` 線性進度 |
 | `Spinner` | Indeterminate loading |
+| `LoadingIndicator` | Material 3 expressive 等待／已知進度 indicator |
+| `Snackbar` / `SnackbarHost` | 短暫結果與全域訊息佇列 |
 | `Placeholder` | 可動畫 skeleton |
 | `Toast` | 單一受控訊息卡片 |
 | `ToastHost` | 全域 Snackbar queue；搭配 `rememberToastState` |
@@ -92,6 +99,10 @@ Carousel(slides, showControls = true, showIndicators = true)
 | --- | --- |
 | `Breadcrumb` | `BreadcrumbItem` 階層導覽 |
 | `Navbar` | Brand、`NavItem` 與 actions |
+| `NavigationBar` | 窄畫面的底部目的地 |
+| `NavigationRail` | 中型寬度的側邊目的地 |
+| `NavigationDrawer` | 寬畫面常駐 drawer |
+| `TopAppBar` / `BottomAppBar` / `Toolbar` | 頁面與區域 actions |
 | `Tabs` | Material primary tab row |
 | `Nav` | 水平／垂直 navigation |
 | `Pagination` | 1-based pages 與 sibling range |
@@ -128,6 +139,9 @@ ScrollSpy(sectionItems, activeSection, onNavigate = { section -> activeSection =
 | `FormFilePicker` | 平台 file picker 的共用外觀 |
 | `FormActions` | Submit／reset actions |
 | `FormValidators` | required、email、length、pattern、all |
+| `DatePicker` / `DateRangePicker` / `TimePicker` | 跨平台 Material 日期時間選擇 |
+| `Search` | 受控搜尋與結果 slot |
+| `AssistChip` / `FilterChip` / `InputChip` / `SuggestionChip` | 動作、條件、輸入與建議 chips |
 
 所有欄位都遵循 `value + onValueChange` controlled contract。`helperText` 是格式說明；
 `errorText != null` 才代表驗證失敗；`required` 只畫出標記，仍需搭配 validator。
@@ -169,6 +183,8 @@ fun ContactForm(onSubmit: (String) -> Unit) {
 | `Ask` | 文字輸入問題 |
 | `Choice` | 單選問題 |
 | `Offcanvas` | Start／End side panel |
+| `BottomSheet` | 行動版底部次要工作面板 |
+| `SideSheet` | 桌面／寬畫面側邊工作面板 |
 | `Popover` | Anchor、title、message |
 | `Tooltip` | 呼叫端控制 hover／focus visibility |
 
