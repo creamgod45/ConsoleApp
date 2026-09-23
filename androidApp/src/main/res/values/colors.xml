@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 與 App.kt 的 md_theme_light_primary / onPrimary 同色，啟動畫面才不會跳色 -->
+    <color name="ic_launcher_background">#FF0B0C0A</color>
+</resources>

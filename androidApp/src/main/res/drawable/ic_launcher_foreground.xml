@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 終端機提示符 ">_"，畫在 adaptive icon 的安全範圍（中心 108/2，半徑 36）內 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:pathData="M38,40 L52,54 L38,68"
+        android:strokeColor="#FF26E543"
+        android:strokeWidth="6"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M58,68 L72,68"
+        android:strokeColor="#FF26E543"
+        android:strokeWidth="6"
+        android:strokeLineCap="round" />
+</vector>

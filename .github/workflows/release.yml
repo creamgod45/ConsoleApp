@@ -1,11 +1,13 @@
-name: Release Desktop Packages
+name: Release Packages
 
-# 三平台原生安裝包 + 免安裝壓縮檔，上傳到 GitHub Release。
+# 桌面三平台原生安裝包 + 免安裝壓縮檔 + Android APK/AAB，上傳到 GitHub Release。
 #
 # jpackage 無法交叉編譯，所以每種格式只能在對應的 OS runner 上產生：
 #   ubuntu  -> .deb / .rpm
 #   windows -> .msi
 #   macos   -> .dmg（arm64 與 x64 各打一份）
+#
+# Android 不受這個限制，跟著 ubuntu runner 一起打 .apk / .aab。
 
 on:
   push:
@@ -156,9 +158,84 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+  package-android:
+    name: 打包 android
+    needs: resolve-version
+    runs-on: ubuntu-latest
+    env:
+      # secrets context 在 step 的 if: 不可用（只有 github/needs/strategy/matrix/job/
+      # runner/env/vars/steps/inputs），所以先在 job 層轉成 env 再判斷。
+      ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 安裝 JDK 21 (Zulu)
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: '21'
+
+      - name: 設定 Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: 還原簽章金鑰
+        # 沒有設定 ANDROID_KEYSTORE_BASE64 secret 時就跳過，產物會是未簽署的 APK。
+        if: env.ANDROID_KEYSTORE_BASE64 != ''
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.keystore"
+          echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/release.keystore" >> "$GITHUB_ENV"
+
+      - name: 打包
+        shell: bash
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          ./gradlew :androidApp:assembleRelease :androidApp:bundleRelease \
+            -PappVersion=${{ needs.resolve-version.outputs.version }} --stacktrace
+
+      - name: 收集產物
+        shell: bash
+        env:
+          VERSION: ${{ needs.resolve-version.outputs.version }}
+        run: |
+          set -euo pipefail
+          OUT=artifacts
+          mkdir -p "$OUT"
+
+          # 未簽署時 AGP 的檔名會是 *-release-unsigned.apk，名稱上保留這個資訊，
+          # 免得有人拿到裝不起來的檔案還找不到原因。
+          while IFS= read -r f; do
+            case "$f" in
+              *-unsigned.apk) cp "$f" "$OUT/ConsoleApp-${VERSION}-android-unsigned.apk" ;;
+              *) cp "$f" "$OUT/ConsoleApp-${VERSION}-android.apk" ;;
+            esac
+          done < <(find androidApp/build/outputs/apk/release -maxdepth 1 -type f -name '*.apk')
+
+          # .aab 給 Google Play 上架用（Play 會自己重新簽章）
+          while IFS= read -r f; do
+            cp "$f" "$OUT/ConsoleApp-${VERSION}-android.aab"
+          done < <(find androidApp/build/outputs/bundle/release -maxdepth 1 -type f -name '*.aab')
+
+          ls -lh "$OUT"
+          if [ -z "$(ls -A "$OUT")" ]; then
+            echo "::error::android 沒有產生任何檔案"
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android
+          path: artifacts/*
+          if-no-files-found: error
+          retention-days: 7
+
   release:
     name: 建立 Release
-    needs: [resolve-version, package]
+    needs: [resolve-version, package, package-android]
     runs-on: ubuntu-latest
     permissions:
       contents: write

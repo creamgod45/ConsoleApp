@@ -1,7 +1,7 @@
 # ConsoleApp Design System
 
 以 Kotlin Multiplatform 與 Compose Multiplatform 建立的跨平台設計系統，同一套
-`commonMain` 元件可用於 Desktop JVM、JavaScript 與 Wasm。
+`commonMain` 元件可用於 Desktop JVM、Android、JavaScript 與 Wasm。
 
 底層採用 Material 3 的 theme、互動與無障礙能力，公開 API 則保留接近
 Bootstrap／HTML framework 的短名稱與語意，讓畫面能快速組裝：
@@ -41,6 +41,45 @@ Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
 
 ## 快速開始
 
+### Android 建置
+
+Android target 需要 **API 36** 的 SDK 與 **build-tools 36.0.0**，JDK 則要 17 以上
+（AGP 9 的要求；桌面打包本來就用 JDK 21）。用 `ANDROID_HOME` 環境變數，或在專案根目錄
+放一個 `local.properties` 指向 SDK：
+
+```properties
+sdk.dir=/path/to/Android/sdk
+```
+
+`local.properties` 已在 `.gitignore` 裡，不要提交。沒有 SDK 時 `desktopApp` / `webApp`
+仍可正常建置，只有 `:androidApp` 與 `:shared` 的 Android target 會失敗。
+
+- 裝到已連線的裝置或模擬器：`./gradlew :androidApp:installDebug`
+- 只產生 APK 不安裝：`./gradlew :androidApp:assembleDebug`（輸出在 `androidApp/build/outputs/apk/debug/`）
+- 發佈用 APK（側載）：`./gradlew :androidApp:assembleRelease`
+- 發佈用 AAB（Google Play）：`./gradlew :androidApp:bundleRelease`
+
+debug 版的 application id 是 `cg.creamgod.consoleapp.debug`，可以跟正式版同時裝在同一台裝置上。
+
+沒有給簽章資料時，release 版會是**未簽署**的 `*-release-unsigned.apk`，無法直接安裝。
+簽章參數可用 gradle property 或環境變數提供：
+
+| Gradle property | 環境變數 |
+| --- | --- |
+| `androidKeystorePath` | `ANDROID_KEYSTORE_PATH` |
+| `androidKeystorePassword` | `ANDROID_KEYSTORE_PASSWORD` |
+| `androidKeyAlias` | `ANDROID_KEY_ALIAS` |
+| `androidKeyPassword` | `ANDROID_KEY_PASSWORD`（省略時沿用 keystore 密碼） |
+
+```shell
+./gradlew :androidApp:assembleRelease \
+  -PandroidKeystorePath=$HOME/keys/release.keystore \
+  -PandroidKeystorePassword=... -PandroidKeyAlias=consoleapp -PandroidKeyPassword=...
+```
+
+`versionName` 來自 `-PappVersion`（跟桌面版同一個參數），`versionCode` 由它推導成
+`major * 10000 + minor * 100 + patch`，需要時用 `-PappVersionCode=N` 覆寫。
+
 ### Packaging the desktop app
 
 `jpackage` (which Compose Desktop drives under the hood) cannot cross-compile: each installer
@@ -61,15 +100,25 @@ anything else for `.msi` and `.dmg`.
 
 ### Releasing
 
-`.github/workflows/release.yml` builds all three platforms in parallel (Linux x64, Windows x64,
-macOS arm64 and x64) and uploads the installers plus portable archives to a GitHub Release.
+`.github/workflows/release.yml` builds every platform in parallel (Linux x64, Windows x64,
+macOS arm64 and x64, plus Android) and uploads the installers, portable archives and the Android
+APK/AAB to a GitHub Release.
 
 - Push a tag: `git tag v1.0.0 && git push origin v1.0.0` — publishes the Release directly.
-- Or run the **Release Desktop Packages** workflow manually from the Actions tab and type the
+- Or run the **Release Packages** workflow manually from the Actions tab and type the
   version; it creates a draft Release by default so you can check the artifacts first.
 
 Release notes come from `.github/release-notes-template.md` (`{{VERSION}}` is substituted).
-The artifacts are unsigned, so Windows SmartScreen and macOS Gatekeeper will warn about them.
+The desktop artifacts are unsigned, so Windows SmartScreen and macOS Gatekeeper will warn about
+them. Android 的 APK 只有在下列 repository secrets 都存在時才會簽章，否則會以
+`*-android-unsigned.apk` 發佈：
+
+| Secret | 內容 |
+| --- | --- |
+| `ANDROID_KEYSTORE_BASE64` | `base64 -w0 release.keystore` 的輸出 |
+| `ANDROID_KEYSTORE_PASSWORD` | keystore 密碼 |
+| `ANDROID_KEY_ALIAS` | key alias |
+| `ANDROID_KEY_PASSWORD` | key 密碼 |
 
 ```kotlin
 import cg.creamgod.consoleapp.designsystem.components.*
@@ -188,6 +237,9 @@ DocumentRenderer(quickStart)
 # Web
 ./gradlew :webApp:wasmJsBrowserDevelopmentRun
 ./gradlew :webApp:jsBrowserDevelopmentRun
+
+# Android（需要已連線的裝置或模擬器）
+./gradlew :androidApp:installDebug
 ```
 
 Windows PowerShell 使用 `./gradlew.bat`。
@@ -196,9 +248,12 @@ Windows PowerShell 使用 `./gradlew.bat`。
 
 ```shell
 ./gradlew :shared:jvmTest
+./gradlew :shared:testAndroidHostTest
 ./gradlew :shared:jsTest
 ./gradlew :shared:wasmJsTest
 ```
+
+`testAndroidHostTest` 跑在 JVM 上，不需要裝置或模擬器。
 
 ## 專案結構
 
