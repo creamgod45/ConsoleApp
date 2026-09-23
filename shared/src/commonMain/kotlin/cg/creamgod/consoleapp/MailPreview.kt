@@ -10,4 +10,5 @@ data class MailPreview(
     val starred: Boolean,
     val content: String,
     val attachments: List<MailAttachment>,
+    val email: String,
 )

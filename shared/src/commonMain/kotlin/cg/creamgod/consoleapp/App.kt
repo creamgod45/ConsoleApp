@@ -46,9 +46,9 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.isTraversalGroup
@@ -483,6 +483,7 @@ fun MailerPage(
     onPageSelected: (Page) -> Unit,
 ) {
     val mails = remember { mutableStateListOf<MailPreview>() }
+    val originMails = remember { mutableStateListOf<MailPreview>() }
     var loading by remember { mutableStateOf(true) }
     var loadError by remember { mutableStateOf<String?>(null) }
     var reloadRequest by remember { mutableIntStateOf(0) }
@@ -511,22 +512,26 @@ fun MailerPage(
             val response = loadMails(mailQuery)
             selectedMail = null
             selectedMailIds = emptySet()
+            val loadedMails = response.map { mail ->
+                MailPreview(
+                    id = mail.id,
+                    sender = mail.name,
+                    subject = mail.email,
+                    preview = "來自 ${mail.email} 的模擬郵件",
+                    time = mail.receivedAt.replace('T', ' '),
+                    unread = true,
+                    starred = false,
+                    content = mail.content,
+                    attachments = mail.attachments,
+                    email = mail.email,
+                )
+            }
+
             mails.clear()
-            mails.addAll(
-                response.map { mail ->
-                    MailPreview(
-                        id = mail.id,
-                        sender = mail.name,
-                        subject = mail.email,
-                        preview = "來自 ${mail.email} 的模擬郵件",
-                        time = mail.receivedAt.replace('T', ' '),
-                        unread = true,
-                        starred = false,
-                        content = mail.content,
-                        attachments = mail.attachments,
-                    )
-                },
-            )
+            mails.addAll(loadedMails)
+
+            originMails.clear()
+            originMails.addAll(loadedMails)
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (error: Throwable) {
@@ -609,6 +614,7 @@ fun MailerPage(
         }
         matchesAttachment && matchesReadState
     }
+    var showBottomSheet by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -830,6 +836,27 @@ fun MailerPage(
                         onSelectedChange = { showDateRangePicker = true },
                     )
                 }
+                AssistChip(
+                    label = "篩選",
+                    onClick = {
+                        showBottomSheet = true
+                    },
+                    enabled = true,
+                    leadingIcon = {
+                        Icon(imageVector = Icons.Default.FilterList, "篩選選單")
+                    }
+                )
+                AssistChip(
+                    label = "重置篩選",
+                    onClick = {
+                        mails.clear()
+                        mails.addAll(originMails)
+                    },
+                    enabled = true,
+                    leadingIcon = {
+                        Icon(imageVector = Icons.Default.Refresh, "重置篩選")
+                    }
+                )
             }
 
             Box(modifier = Modifier.fillMaxSize()) {
@@ -899,6 +926,64 @@ fun MailerPage(
                 }
             }
         }
+
+        BottomSheet(
+            visible = showBottomSheet,
+            onDismiss = {
+                showBottomSheet = false
+            },
+            content = {
+                Column (modifier = Modifier.fillMaxWidth().padding(16.dp), content = {
+                    var selectedEmailValues by remember { mutableStateOf(emptySet<String>()) }
+
+                    val visibleMails = mails.filter { mail ->
+                        val matchesEmail =
+                            selectedEmailValues.isEmpty() ||
+                                    mail.email.trim() in selectedEmailValues
+
+                        val matchesAttachment =
+                            !filterWithAttachment || mail.attachments.isNotEmpty()
+
+                        val matchesReadState = when (filterWithRead) {
+                            MailFilter.All -> true
+                            MailFilter.Unread -> mail.unread
+                            MailFilter.Starred -> mail.starred
+                        }
+
+                        matchesEmail && matchesAttachment && matchesReadState
+                    }
+                    val emails = mails
+                        .distinctBy { it.email.trim().lowercase() }
+                        .map {
+                            val email = it.email.trim()
+                            FormOption(value = email, label = email)
+                        }
+                    FormMultiSelect(
+                        values = selectedEmailValues,
+                        options = emails,
+                        onValuesChange = {
+                            v -> selectedEmailValues = v
+                        },
+                        label = "篩選電子信箱",
+                        placeholder = "請選擇篩選",
+                        helperText = "",
+                        enabled = true
+                    )
+                    Button(
+                        onClick = {
+                            val filteredMails = mails.filter { mail ->
+                                mail.email.trim() in selectedEmailValues
+                            }
+
+                            mails.clear()
+                            mails.addAll(filteredMails)
+                            showBottomSheet = false
+                        },
+                        text = "篩選",
+                    )
+                })
+            }
+        )
         ToastHost(
             state = toastState,
             modifier = Modifier
