@@ -27,14 +27,17 @@ val escapedApiBaseUrl = apiBaseUrl.replace("\\", "\\\\").replace("\"", "\\\"")
 // （檔名會是 *-unsigned.apk，無法直接安裝）。不要把 keystore 或密碼提交進 repo。
 
 
-val keystorePath = providers.gradleProperty("androidKeystorePath")
-    .orElse(providers.environmentVariable("ANDROID_KEYSTORE_PATH"))
-val keystorePassword = providers.gradleProperty("androidKeystorePassword")
-    .orElse(providers.environmentVariable("ANDROID_KEYSTORE_PASSWORD"))
-val keystoreKeyAlias = providers.gradleProperty("androidKeyAlias")
-    .orElse(providers.environmentVariable("ANDROID_KEY_ALIAS"))
-val keystoreKeyPassword = providers.gradleProperty("androidKeyPassword")
-    .orElse(providers.environmentVariable("ANDROID_KEY_PASSWORD"))
+// GitHub Actions 會把不存在的 secret 展開成空字串，而 environmentVariable() 會把
+// 「存在但為空」當成有值，導致下面 keyPassword 的 orElse 回退永遠不會發生、改用空密碼
+// 讀金鑰（錯誤訊息是 "Given final block not properly padded"）。所以空白值一律視為未設定。
+fun signingValue(gradleProperty: String, environmentVariable: String): Provider<String> =
+    providers.gradleProperty(gradleProperty).filter { it.isNotBlank() }
+        .orElse(providers.environmentVariable(environmentVariable).filter { it.isNotBlank() })
+
+val keystorePath = signingValue("androidKeystorePath", "ANDROID_KEYSTORE_PATH")
+val keystorePassword = signingValue("androidKeystorePassword", "ANDROID_KEYSTORE_PASSWORD")
+val keystoreKeyAlias = signingValue("androidKeyAlias", "ANDROID_KEY_ALIAS")
+val keystoreKeyPassword = signingValue("androidKeyPassword", "ANDROID_KEY_PASSWORD")
 
 android {
     namespace = "cg.creamgod.consoleapp"
