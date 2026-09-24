@@ -20,7 +20,7 @@ val appVersionCode: Int = providers.gradleProperty("appVersionCode")
     .getOrElse(versionCodeOf(appVersion))
 
 // Emulator 可透過 10.0.2.2 連到開發電腦；實機可用 -PapiBaseUrl=http://<電腦區網 IP>:8000 覆寫。
-val apiBaseUrl = providers.gradleProperty("apiBaseUrl").getOrElse("http://192.168.10.244:8000")
+val apiBaseUrl = providers.gradleProperty("apiBaseUrl").getOrElse("http://172.18.180.75:8000")
 val escapedApiBaseUrl = apiBaseUrl.replace("\\", "\\\\").replace("\"", "\\\"")
 
 // 簽章資料從 gradle property 或環境變數來，兩者都沒有時 release 會產出未簽署的 APK
@@ -38,7 +38,11 @@ val keystoreKeyPassword = providers.gradleProperty("androidKeyPassword")
 
 android {
     namespace = "cg.creamgod.consoleapp"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    compileSdk {
+        version = release(libs.versions.android.compileSdk.get().toInt()) {
+            minorApiLevel = libs.versions.android.compileSdkMinor.get().toInt()
+        }
+    }
 
     defaultConfig {
         applicationId = "cg.creamgod.consoleapp"
@@ -97,5 +101,5 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.okhttp)
 
-    debugImplementation(compose.uiTooling)
+    debugImplementation(libs.uitooling)
 }

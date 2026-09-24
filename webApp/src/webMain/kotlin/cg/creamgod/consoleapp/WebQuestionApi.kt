@@ -1,13 +1,7 @@
 package cg.creamgod.consoleapp
 import js.objects.unsafeJso
-import web.abort.AbortSignal
 import web.form.FormData
-import web.http.BodyInit
-import web.http.HeadersInit
 import web.http.POST
-import web.http.ReferrerPolicy
-import web.http.RequestCache
-import web.http.RequestCredentials
 import web.http.RequestInit
 import web.http.RequestMethod
 import web.http.fetch

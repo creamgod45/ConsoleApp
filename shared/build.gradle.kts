@@ -13,9 +13,13 @@ kotlin {
 
     // AGP 9 起 KMP 模組要用 com.android.kotlin.multiplatform.library，
     // Android 設定寫在 kotlin.androidLibrary 裡，不再有獨立的 android {} 區塊。
-    androidLibrary {
+    android {
         namespace = "cg.creamgod.consoleapp.shared"
-        compileSdk = libs.versions.android.compileSdk.get().toInt()
+        compileSdk {
+            version = release(libs.versions.android.compileSdk.get().toInt()) {
+                minorApiLevel = libs.versions.android.compileSdkMinor.get().toInt()
+            }
+        }
         minSdk = libs.versions.android.minSdk.get().toInt()
 
         compilerOptions {
