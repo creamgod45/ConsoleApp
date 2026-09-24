@@ -71,7 +71,7 @@ fun <T> NavigationRail(
     }
 }
 
-/** Persistent navigation drawer intended for wide desktop/tablet layouts. */
+/** Persistent navigation Drawer intended for wide desktop/tablet layouts. */
 @Composable
 fun <T> NavigationDrawer(
     items: List<NavItem<T>>,

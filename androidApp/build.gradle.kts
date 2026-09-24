@@ -101,5 +101,5 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.okhttp)
 
-    debugImplementation(libs.uitooling)
+    debugImplementation(libs.compose.uiToolingPreview)
 }

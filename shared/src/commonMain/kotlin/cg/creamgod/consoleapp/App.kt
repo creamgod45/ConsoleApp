@@ -46,7 +46,6 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.IntOffset
@@ -56,8 +55,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.state.ToggleableState
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cg.creamgod.consoleapp.Page.*
 import cg.creamgod.consoleapp.designsystem.catalog.ComponentGuide
@@ -127,12 +126,12 @@ fun ReplyTheme(
 }
 
 @Composable
-fun listTexts(name: String) {
+fun ListTexts(name: String) {
     Text(text = "Hello, $name!", modifier = Modifier.padding(1.dp, 8.dp))
 }
 
 @Composable
-fun welcomePage(names: List<String> = listOf("Compose", "Kotlin", "Multiplatform", "Java"))
+fun WelcomePage(names: List<String> = listOf("Compose", "Kotlin", "Multiplatform", "Java"))
 {
     Surface {
         Row {
@@ -141,7 +140,7 @@ fun welcomePage(names: List<String> = listOf("Compose", "Kotlin", "Multiplatform
                 horizontalAlignment = Alignment.CenterHorizontally,
                 content = {
                     for (name in names) {
-                        listTexts(name)
+                        ListTexts(name)
                     }
                 }
             )
@@ -228,7 +227,7 @@ fun CustomizableSearchBar(
 }
 
 @Composable
-fun settingPage()
+fun SettingPage()
 {
     var query by remember { mutableStateOf("") }
 
@@ -334,8 +333,8 @@ fun ServiceSelector(
     }
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
 fun App(
     submitQuestion: suspend (String, PickedFile) -> Unit = { _, _ ->
         throw UnsupportedOperationException("尚未設定表單送出服務")
@@ -351,7 +350,7 @@ fun App(
     ReplyTheme(
         themeMode = themeMode
     ) {
-        drawer(
+        Drawer(
             onPageSelected = { page -> currentPage = page },
             onThemeModeChanged = { mode -> themeMode = mode },
             currentPage = currentPage,
@@ -374,12 +373,12 @@ fun App(
                     }
 
                     Greeting -> {
-                        welcomePage(
+                        WelcomePage(
                         )
                     }
 
                     Setting -> {
-                        settingPage(
+                        SettingPage(
                         )
                     }
 
@@ -440,6 +439,14 @@ fun App(
                     Mailer -> {
                         MailerPage(
                             loadMails = loadMails,
+                            onPageSelected = { page ->
+                                currentPage = page
+                            }
+                        )
+                    }
+
+                    Camera -> {
+                        CameraPage(
                             onPageSelected = { page ->
                                 currentPage = page
                             }
@@ -1649,7 +1656,7 @@ fun KotlinIntroductionScreen(
 }
 
 @Composable
-fun drawer(
+fun Drawer(
     themeMode: ThemeMode,
     currentPage: Page,
     onPageSelected: (Page) -> Unit,
@@ -1756,6 +1763,19 @@ fun drawer(
                             },
                             icon = {
                                 Icon(imageVector = Icons.Filled.Mail, contentDescription = "Mail")
+                            }
+                        )
+                        HorizontalDivider()
+                        NavigationDrawerItem(
+                            label = {
+                                Text(text = "相機")
+                            },
+                            selected = currentPage == Camera,
+                            onClick = {
+                                onPageSelected(Camera)
+                            },
+                            icon = {
+                                Icon(imageVector = Icons.Filled.Camera, contentDescription = "相機")
                             }
                         )
                         Spacer(Modifier.height(12.dp))

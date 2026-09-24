@@ -15,5 +15,6 @@ enum class Page {
     Compose,
     ComponentGuide,
     Mailer,
+    Camera,
 
 }
