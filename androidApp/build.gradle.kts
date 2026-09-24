@@ -38,7 +38,7 @@ val keystoreKeyPassword = providers.gradleProperty("androidKeyPassword")
 
 android {
     namespace = "cg.creamgod.consoleapp"
-    compileSdk = 37
+    compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
         applicationId = "cg.creamgod.consoleapp"
